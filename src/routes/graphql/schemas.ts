@@ -39,21 +39,35 @@ const PostType = new GraphQLObjectType({
     }),
 })
 
+
+const UserType = new GraphQLObjectType({
+    name: 'User',
+    fields: () => ({
+        id: {type: GraphQLString},
+        name: {type: GraphQLString},
+        balance: {type: GraphQLFloat}
+    }),
+})
+
 const RootQueryType = new GraphQLObjectType({
     name: 'RootQuery',
     fields: () =>({
         memberTypes: {
             type: new GraphQLList(MemberType),
-            args: {},
             async resolve(obj, args, prisma, info) {
                 return prisma.memberType.findMany();
             }
         },
         posts: {
             type: new GraphQLList(PostType),
-            args: {},
             async resolve(obj, args, prisma, info) {
                 return prisma.post.findMany();
+            }
+        },
+        users: {
+            type: new GraphQLList(UserType),
+            async resolve(obj, args, prisma, info) {
+                return prisma.user.findMany();
             }
         }
     }),
