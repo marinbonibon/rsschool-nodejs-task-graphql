@@ -11,22 +11,22 @@ import {
 } from 'graphql';
 
 export const gqlResponseSchema = Type.Partial(
-  Type.Object({
-    data: Type.Any(),
-    errors: Type.Any(),
-  }),
+    Type.Object({
+        data: Type.Any(),
+        errors: Type.Any(),
+    }),
 );
 
 export const createGqlResponseSchema = {
-  body: Type.Object(
-    {
-      query: Type.String(),
-      variables: Type.Optional(Type.Record(Type.String(), Type.Any())),
-    },
-    {
-      additionalProperties: false,
-    },
-  ),
+    body: Type.Object(
+        {
+            query: Type.String(),
+            variables: Type.Optional(Type.Record(Type.String(), Type.Any())),
+        },
+        {
+            additionalProperties: false,
+        },
+    ),
 };
 
 const MemberType = new GraphQLObjectType({
@@ -69,27 +69,46 @@ const ProfileType = new GraphQLObjectType({
 
 const RootQueryType = new GraphQLObjectType({
     name: 'RootQuery',
-    fields: () =>({
+    description: 'Root query',
+    fields: () => ({
         memberTypes: {
             type: new GraphQLList(MemberType),
+            description: 'List of members',
             async resolve(obj, args, prisma, info) {
                 return prisma.memberType.findMany();
             }
         },
+        memberType: {
+            type: MemberType,
+            description: 'A single member',
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString)}
+            },
+            async resolve(obj, args, prisma, info) {
+                return prisma.memberType.findUnique({
+                    where: {
+                        id: args.id,
+                    },
+                });
+            }
+        },
         posts: {
             type: new GraphQLList(PostType),
+            description: 'List of posts',
             async resolve(obj, args, prisma, info) {
                 return prisma.post.findMany();
             }
         },
         users: {
             type: new GraphQLList(UserType),
+            description: 'List of users',
             async resolve(obj, args, prisma, info) {
                 return prisma.user.findMany();
             }
         },
         profiles: {
             type: new GraphQLList(ProfileType),
+            description: 'List of profiles',
             async resolve(obj, args, prisma, info) {
                 return prisma.profile.findMany();
             }
