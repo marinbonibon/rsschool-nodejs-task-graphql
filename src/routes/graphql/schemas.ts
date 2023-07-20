@@ -1,5 +1,14 @@
 import { Type } from '@fastify/type-provider-typebox';
-import { GraphQLFloat, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+import {
+    GraphQLBoolean,
+    GraphQLFloat,
+    GraphQLInt,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLSchema,
+    GraphQLString
+} from 'graphql';
 
 export const gqlResponseSchema = Type.Partial(
   Type.Object({
@@ -23,19 +32,19 @@ export const createGqlResponseSchema = {
 const MemberType = new GraphQLObjectType({
     name: 'Member',
     fields: () => ({
-        id: {type: GraphQLString},
-        discount: {type: GraphQLFloat},
-        postsLimitPerMonth: {type: GraphQLInt},
+        id: {type: new GraphQLNonNull(GraphQLString)},
+        discount: {type: new GraphQLNonNull(GraphQLFloat)},
+        postsLimitPerMonth: {type: new GraphQLNonNull(GraphQLInt)},
     }),
 })
 
 const PostType = new GraphQLObjectType({
     name: 'Post',
     fields: () => ({
-        id: {type: GraphQLString},
+        id: {type: new GraphQLNonNull(GraphQLString)},
         title: {type: GraphQLString},
         content: {type: GraphQLString},
-        authorId: {type: GraphQLString}
+        authorId: {type: new GraphQLNonNull(GraphQLString)}
     }),
 })
 
@@ -43,9 +52,18 @@ const PostType = new GraphQLObjectType({
 const UserType = new GraphQLObjectType({
     name: 'User',
     fields: () => ({
-        id: {type: GraphQLString},
-        name: {type: GraphQLString},
-        balance: {type: GraphQLFloat}
+        id: {type: new GraphQLNonNull(GraphQLString)},
+        name: {type: new GraphQLNonNull(GraphQLString)},
+        balance: {type: new GraphQLNonNull(GraphQLFloat)}
+    }),
+})
+
+const ProfileType = new GraphQLObjectType({
+    name: 'Profile',
+    fields: () => ({
+        id: {type: new GraphQLNonNull(GraphQLString)},
+        isMale: {type: new GraphQLNonNull(GraphQLBoolean)},
+        yearOfBirth: {type: new GraphQLNonNull(GraphQLInt)},
     }),
 })
 
@@ -68,6 +86,12 @@ const RootQueryType = new GraphQLObjectType({
             type: new GraphQLList(UserType),
             async resolve(obj, args, prisma, info) {
                 return prisma.user.findMany();
+            }
+        },
+        profiles: {
+            type: new GraphQLList(ProfileType),
+            async resolve(obj, args, prisma, info) {
+                return prisma.profile.findMany();
             }
         }
     }),
