@@ -42,8 +42,8 @@ const PostType = new GraphQLObjectType({
     name: 'Post',
     fields: () => ({
         id: {type: new GraphQLNonNull(GraphQLString)},
-        title: {type: GraphQLString},
-        content: {type: GraphQLString},
+        title: {type: new GraphQLNonNull(GraphQLString)},
+        content: {type: new GraphQLNonNull(GraphQLString)},
         authorId: {type: new GraphQLNonNull(GraphQLString)}
     }),
 })
@@ -99,11 +99,39 @@ const RootQueryType = new GraphQLObjectType({
                 return prisma.post.findMany();
             }
         },
+        post: {
+            type: PostType,
+            description: 'A single post',
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString)}
+            },
+            async resolve(obj, args, prisma, info) {
+                return prisma.post.findUnique({
+                    where: {
+                        id: args.id,
+                    },
+                });
+            }
+        },
         users: {
             type: new GraphQLList(UserType),
             description: 'List of users',
             async resolve(obj, args, prisma, info) {
                 return prisma.user.findMany();
+            }
+        },
+        user: {
+            type: UserType,
+            description: 'A single user',
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString)}
+            },
+            async resolve(obj, args, prisma, info) {
+                return prisma.user.findUnique({
+                    where: {
+                        id: args.id,
+                    },
+                });
             }
         },
         profiles: {
@@ -112,7 +140,21 @@ const RootQueryType = new GraphQLObjectType({
             async resolve(obj, args, prisma, info) {
                 return prisma.profile.findMany();
             }
-        }
+        },
+        profile: {
+            type: ProfileType,
+            description: 'A single profile',
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString)}
+            },
+            async resolve(obj, args, prisma, info) {
+                return prisma.profile.findUnique({
+                    where: {
+                        id: args.id,
+                    },
+                });
+            }
+        },
     }),
 
 })
