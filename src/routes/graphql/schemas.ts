@@ -5,10 +5,12 @@ import {
     GraphQLInt,
     GraphQLList,
     GraphQLNonNull,
-    GraphQLObjectType,
+    GraphQLObjectType, GraphQLScalarType,
     GraphQLSchema,
-    GraphQLString
+    GraphQLString, Kind
 } from 'graphql';
+import { UUIDType } from './types/uuid.js';
+import { MemberTypeId } from '../member-types/schemas.js';
 
 export const gqlResponseSchema = Type.Partial(
     Type.Object({
@@ -29,10 +31,26 @@ export const createGqlResponseSchema = {
     ),
 };
 
+const MemberTypeIdType = new GraphQLScalarType({
+    name: 'MemberTypeId',
+    description: 'Custom scalar type for MemberTypeId enum',
+    serialize(value) {
+        return value;
+    },
+    parseValue(value) {
+        return value;
+    },
+    parseLiteral(ast) {
+        if (ast.kind === Kind.STRING) {
+            return ast.value as MemberTypeId;
+        }
+        return null;
+    },
+});
 const MemberType = new GraphQLObjectType({
     name: 'Member',
     fields: () => ({
-        id: {type: new GraphQLNonNull(GraphQLString)},
+        id: {type: new GraphQLNonNull(MemberTypeIdType)},
         discount: {type: new GraphQLNonNull(GraphQLFloat)},
         postsLimitPerMonth: {type: new GraphQLNonNull(GraphQLInt)},
     }),
@@ -41,7 +59,7 @@ const MemberType = new GraphQLObjectType({
 const PostType = new GraphQLObjectType({
     name: 'Post',
     fields: () => ({
-        id: {type: new GraphQLNonNull(GraphQLString)},
+        id: {type: new GraphQLNonNull(UUIDType)},
         title: {type: new GraphQLNonNull(GraphQLString)},
         content: {type: new GraphQLNonNull(GraphQLString)},
         authorId: {type: new GraphQLNonNull(GraphQLString)}
@@ -52,7 +70,7 @@ const PostType = new GraphQLObjectType({
 const UserType = new GraphQLObjectType({
     name: 'User',
     fields: () => ({
-        id: {type: new GraphQLNonNull(GraphQLString)},
+        id: {type: new GraphQLNonNull(UUIDType)},
         name: {type: new GraphQLNonNull(GraphQLString)},
         balance: {type: new GraphQLNonNull(GraphQLFloat)}
     }),
@@ -61,7 +79,7 @@ const UserType = new GraphQLObjectType({
 const ProfileType = new GraphQLObjectType({
     name: 'Profile',
     fields: () => ({
-        id: {type: new GraphQLNonNull(GraphQLString)},
+        id: {type: new GraphQLNonNull(UUIDType)},
         isMale: {type: new GraphQLNonNull(GraphQLBoolean)},
         yearOfBirth: {type: new GraphQLNonNull(GraphQLInt)},
     }),
@@ -75,17 +93,17 @@ const RootQueryType = new GraphQLObjectType({
             type: new GraphQLList(MemberType),
             description: 'List of members',
             async resolve(obj, args, prisma, info) {
-                return prisma.memberType.findMany();
+                return await prisma.memberType.findMany();
             }
         },
         memberType: {
             type: MemberType,
             description: 'A single member',
             args: {
-                id: { type: new GraphQLNonNull(GraphQLString)}
+                id: { type: new GraphQLNonNull(MemberTypeIdType)}
             },
             async resolve(obj, args, prisma, info) {
-                return prisma.memberType.findUnique({
+                return await prisma.memberType.findUnique({
                     where: {
                         id: args.id,
                     },
@@ -96,17 +114,17 @@ const RootQueryType = new GraphQLObjectType({
             type: new GraphQLList(PostType),
             description: 'List of posts',
             async resolve(obj, args, prisma, info) {
-                return prisma.post.findMany();
+                return await prisma.post.findMany();
             }
         },
         post: {
             type: PostType,
             description: 'A single post',
             args: {
-                id: { type: new GraphQLNonNull(GraphQLString)}
+                id: { type: new GraphQLNonNull(UUIDType)}
             },
             async resolve(obj, args, prisma, info) {
-                return prisma.post.findUnique({
+                return await prisma.post.findUnique({
                     where: {
                         id: args.id,
                     },
@@ -117,17 +135,17 @@ const RootQueryType = new GraphQLObjectType({
             type: new GraphQLList(UserType),
             description: 'List of users',
             async resolve(obj, args, prisma, info) {
-                return prisma.user.findMany();
+                return await prisma.user.findMany();
             }
         },
         user: {
             type: UserType,
             description: 'A single user',
             args: {
-                id: { type: new GraphQLNonNull(GraphQLString)}
+                id: { type: new GraphQLNonNull(UUIDType)}
             },
             async resolve(obj, args, prisma, info) {
-                return prisma.user.findUnique({
+                return await prisma.user.findUnique({
                     where: {
                         id: args.id,
                     },
@@ -138,17 +156,17 @@ const RootQueryType = new GraphQLObjectType({
             type: new GraphQLList(ProfileType),
             description: 'List of profiles',
             async resolve(obj, args, prisma, info) {
-                return prisma.profile.findMany();
+                return await prisma.profile.findMany();
             }
         },
         profile: {
             type: ProfileType,
             description: 'A single profile',
             args: {
-                id: { type: new GraphQLNonNull(GraphQLString)}
+                id: { type: new GraphQLNonNull(UUIDType)}
             },
             async resolve(obj, args, prisma, info) {
-                return prisma.profile.findUnique({
+                return await prisma.profile.findUnique({
                     where: {
                         id: args.id,
                     },
