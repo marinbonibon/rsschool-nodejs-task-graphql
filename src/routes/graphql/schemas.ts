@@ -425,6 +425,29 @@ const RootMutation = new GraphQLObjectType({
                 })
             }
         },
+        unsubscribeFrom: {
+            type: GraphQLBoolean,
+            description: 'Unsubscribes from user',
+            args: {
+                userId: {
+                    type: new GraphQLNonNull(UUIDType)
+                },
+                authorId: {
+                    type: new GraphQLNonNull(UUIDType)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                const { userId, authorId } = args;
+                await prisma.subscribersOnAuthors.delete({
+                    where: {
+                        subscriberId_authorId: {
+                            subscriberId: userId,
+                            authorId: authorId,
+                        },
+                    },
+                })
+            }
+        }
     })
 })
 
