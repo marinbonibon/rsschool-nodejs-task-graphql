@@ -7,7 +7,7 @@ import {
     GraphQLNonNull,
     GraphQLObjectType, GraphQLScalarType,
     GraphQLSchema,
-    GraphQLString, Kind
+    Kind
 } from 'graphql';
 import { UUIDType } from './types/uuid.js';
 import { MemberTypeId } from '../member-types/schemas.js';
@@ -53,7 +53,7 @@ const MemberType = new GraphQLObjectType({
         id: {type: new GraphQLNonNull(MemberTypeIdType)},
         discount: {type: new GraphQLNonNull(GraphQLFloat)},
         postsLimitPerMonth: {type: new GraphQLNonNull(GraphQLInt)},
-    }),
+    })
 })
 
 const PostType = new GraphQLObjectType({
@@ -63,7 +63,7 @@ const PostType = new GraphQLObjectType({
         title: {type: new GraphQLNonNull(UUIDType)},
         content: {type: new GraphQLNonNull(UUIDType)},
         authorId: {type: new GraphQLNonNull(UUIDType)}
-    }),
+    })
 })
 
 
@@ -126,7 +126,7 @@ const UserType = new GraphQLObjectType({
                 });
             }
         }
-    }),
+    })
 })
 
 const ProfileType = new GraphQLObjectType({
@@ -146,7 +146,7 @@ const ProfileType = new GraphQLObjectType({
                 });
             }
         }
-    }),
+    })
 })
 
 const RootQuery = new GraphQLObjectType({
@@ -237,68 +237,86 @@ const RootQuery = new GraphQLObjectType({
                 });
             }
         },
-    }),
-
+    })
 })
 
 const CreatePostInputTypes = new GraphQLInputObjectType({
     name: 'CreatePostInput',
-    fields: {
-        title: { type: new GraphQLNonNull(UUIDType) },
-        content: { type: new GraphQLNonNull(UUIDType) },
-        authorId: { type: new GraphQLNonNull(UUIDType) },
-    }
+    fields: () => ({
+        title: {type: new GraphQLNonNull(UUIDType)},
+        content: {type: new GraphQLNonNull(UUIDType)},
+        authorId: {type: new GraphQLNonNull(UUIDType)},
+    })
 });
 
 const CreateUserInputTypes = new GraphQLInputObjectType({
     name: 'CreateUserInput',
-    fields: {
-        name: { type: new GraphQLNonNull(UUIDType) },
+    fields: () => ({
+        name: {type: new GraphQLNonNull(UUIDType)},
         balance: {type: new GraphQLNonNull(GraphQLFloat)},
-    }
+    })
+});
+
+const CreateProfileInputTypes = new GraphQLInputObjectType({
+    name: 'CreateProfileInput',
+    fields: () => ({
+        userId: {type: new GraphQLNonNull(UUIDType)},
+        memberTypeId: {type: new GraphQLNonNull(MemberTypeIdType)},
+        isMale: {type: new GraphQLNonNull(GraphQLBoolean)},
+        yearOfBirth: {type: new GraphQLNonNull(GraphQLInt)},
+    })
 });
 
 const RootMutation = new GraphQLObjectType({
     name: 'RootMutationType',
     description: 'Root mutation',
-    fields: {
+    fields: () => ({
         createPost: {
             type: PostType,
+            description: 'Creates a post',
             args: {
                 dto: {
                     type: new GraphQLNonNull(CreatePostInputTypes)
                 }
             },
             resolve: async (_obj, args, prisma) => {
-                try {
-                    const data = { ...args.dto };
-                    return await prisma.post.create({
-                        data
-                    });
-                } catch (error) {
-                    console.log('error', error);
-                }
+                const data = {...args.dto};
+                return await prisma.post.create({
+                    data
+                });
             },
         },
         createUser: {
             type: UserType,
+            description: 'Creates a user',
             args: {
                 dto: {
                     type: new GraphQLNonNull(CreateUserInputTypes)
                 }
             },
             resolve: async (_obj, args, prisma) => {
-               try {
-                   const data = { ...args.dto };
-                   return await prisma.user.create({
-                       data
-                   });
-               } catch (error) {
-                   console.log('error', error);
-               }
+                const data = {...args.dto};
+                return await prisma.user.create({
+                    data
+                });
             },
         },
-    }
+        createProfile: {
+            type: ProfileType,
+            description: 'Creates a profile',
+            args: {
+                dto: {
+                    type: new GraphQLNonNull(CreateProfileInputTypes)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                const data = {...args.dto};
+                return await prisma.profile.create({
+                    data
+                });
+            },
+        },
+    })
 })
 
 export const schema = new GraphQLSchema({
