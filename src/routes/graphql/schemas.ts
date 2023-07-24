@@ -398,6 +398,33 @@ const RootMutation = new GraphQLObjectType({
                 });
             },
         },
+        subscribeTo: {
+            type: UserType,
+            description: 'Subscribes to user',
+            args: {
+                userId: {
+                    type: new GraphQLNonNull(UUIDType)
+                },
+                authorId: {
+                    type: new GraphQLNonNull(UUIDType)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                const { userId, authorId } = args;
+                return await prisma.user.update({
+                    where: {
+                        id: userId,
+                    },
+                    data: {
+                        userSubscribedTo: {
+                            create: {
+                                authorId,
+                            },
+                        },
+                    },
+                })
+            }
+        },
     })
 })
 
