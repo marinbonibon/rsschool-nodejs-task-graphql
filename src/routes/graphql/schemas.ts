@@ -249,6 +249,14 @@ const CreatePostInputTypes = new GraphQLInputObjectType({
     })
 });
 
+const ChangePostInputTypes = new GraphQLInputObjectType({
+    name: 'ChangePostInput',
+    fields: () => ({
+        title: {type: UUIDType},
+        content: {type: UUIDType},
+    })
+});
+
 const CreateUserInputTypes = new GraphQLInputObjectType({
     name: 'CreateUserInput',
     fields: () => ({
@@ -316,6 +324,25 @@ const RootMutation = new GraphQLObjectType({
                 });
             },
         },
+        changePost: {
+            type: PostType,
+            description: 'Changes a post',
+            args: {
+                id: {
+                    type: new GraphQLNonNull(UUIDType)
+                },
+                dto: {
+                    type: new GraphQLNonNull(ChangePostInputTypes)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                const data = {...args.dto};
+                return await prisma.post.update({
+                    where: { id: args.id },
+                    data,
+                });
+            },
+        }
     })
 })
 
