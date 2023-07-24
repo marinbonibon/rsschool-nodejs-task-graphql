@@ -1,7 +1,7 @@
 import { Type } from '@fastify/type-provider-typebox';
 import {
     GraphQLBoolean,
-    GraphQLFloat,
+    GraphQLFloat, GraphQLInputObjectType,
     GraphQLInt,
     GraphQLList,
     GraphQLNonNull,
@@ -60,9 +60,9 @@ const PostType = new GraphQLObjectType({
     name: 'Post',
     fields: () => ({
         id: {type: new GraphQLNonNull(UUIDType)},
-        title: {type: new GraphQLNonNull(GraphQLString)},
-        content: {type: new GraphQLNonNull(GraphQLString)},
-        authorId: {type: new GraphQLNonNull(GraphQLString)}
+        title: {type: new GraphQLNonNull(UUIDType)},
+        content: {type: new GraphQLNonNull(UUIDType)},
+        authorId: {type: new GraphQLNonNull(UUIDType)}
     }),
 })
 
@@ -149,14 +149,14 @@ const ProfileType = new GraphQLObjectType({
     }),
 })
 
-const RootQueryType = new GraphQLObjectType({
-    name: 'RootQuery',
+const RootQuery = new GraphQLObjectType({
+    name: 'RootQueryType',
     description: 'Root query',
     fields: () => ({
         memberTypes: {
             type: new GraphQLList(MemberType),
             description: 'List of members',
-            resolve: async (_obj, args, prisma, info) => {
+            resolve: async (_obj, args, prisma) => {
                 return await prisma.memberType.findMany();
             }
         },
@@ -166,7 +166,7 @@ const RootQueryType = new GraphQLObjectType({
             args: {
                 id: {type: new GraphQLNonNull(MemberTypeIdType)}
             },
-            resolve: async (_obj, args, prisma, info) => {
+            resolve: async (_obj, args, prisma) => {
                 return await prisma.memberType.findUnique({
                     where: {
                         id: args.id,
@@ -177,7 +177,7 @@ const RootQueryType = new GraphQLObjectType({
         posts: {
             type: new GraphQLList(PostType),
             description: 'List of posts',
-            resolve: async (_obj, args, prisma, info) => {
+            resolve: async (_obj, args, prisma) => {
                 return await prisma.post.findMany();
             }
         },
@@ -187,7 +187,7 @@ const RootQueryType = new GraphQLObjectType({
             args: {
                 id: {type: new GraphQLNonNull(UUIDType)}
             },
-            resolve: async (_obj, args, prisma, info) => {
+            resolve: async (_obj, args, prisma) => {
                 return await prisma.post.findUnique({
                     where: {
                         id: args.id,
@@ -198,7 +198,7 @@ const RootQueryType = new GraphQLObjectType({
         users: {
             type: new GraphQLList(UserType),
             description: 'List of users',
-            resolve: async (_obj, args, prisma, info) => {
+            resolve: async (_obj, args, prisma) => {
                 return await prisma.user.findMany();
             }
         },
@@ -208,7 +208,7 @@ const RootQueryType = new GraphQLObjectType({
             args: {
                 id: {type: new GraphQLNonNull(UUIDType)}
             },
-            resolve: async (_obj, args, prisma, info) => {
+            resolve: async (_obj, args, prisma) => {
                 return await prisma.user.findUnique({
                     where: {
                         id: args.id,
@@ -219,7 +219,7 @@ const RootQueryType = new GraphQLObjectType({
         profiles: {
             type: new GraphQLList(ProfileType),
             description: 'List of profiles',
-            resolve: async (_obj, args, prisma, info) => {
+            resolve: async (_obj, args, prisma) => {
                 return await prisma.profile.findMany();
             }
         },
@@ -229,7 +229,7 @@ const RootQueryType = new GraphQLObjectType({
             args: {
                 id: {type: new GraphQLNonNull(UUIDType)}
             },
-            resolve: async (_obj, args, prisma, info) => {
+            resolve: async (_obj, args, prisma) => {
                 return await prisma.profile.findUnique({
                     where: {
                         id: args.id,
@@ -241,6 +241,38 @@ const RootQueryType = new GraphQLObjectType({
 
 })
 
+const CreatePostInputTypes = new GraphQLInputObjectType({
+    name: 'CreatePostInput',
+    fields: {
+        title: { type: new GraphQLNonNull(GraphQLString) },
+        content: { type: new GraphQLNonNull(GraphQLString) },
+        authorId: { type: new GraphQLNonNull(UUIDType) },
+    }
+});
+
+const RootMutation = new GraphQLObjectType({
+    name: 'RootMutationType',
+    description: 'Root mutation',
+    fields: {
+        createPost: {
+            type: PostType,
+            args: {
+                dto: {
+                    type: new GraphQLNonNull(CreatePostInputTypes)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                const data = { ...args.dto };
+                return await prisma.post.create({
+                    data
+                });
+            }
+
+        }
+    }
+})
+
 export const schema = new GraphQLSchema({
-    query: RootQueryType
+    query: RootQuery,
+    mutation: RootMutation,
 })
