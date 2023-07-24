@@ -283,6 +283,15 @@ const CreateProfileInputTypes = new GraphQLInputObjectType({
     })
 });
 
+const ChangeProfileInputTypes = new GraphQLInputObjectType({
+    name: 'ChangeProfileInput',
+    fields: () => ({
+        memberTypeId: {type: MemberTypeIdType},
+        isMale: {type: GraphQLBoolean},
+        yearOfBirth: {type: GraphQLInt},
+    })
+});
+
 const RootMutation = new GraphQLObjectType({
     name: 'RootMutationType',
     description: 'Root mutation',
@@ -365,6 +374,25 @@ const RootMutation = new GraphQLObjectType({
             resolve: async (_obj, args, prisma) => {
                 const data = {...args.dto};
                 return await prisma.user.update({
+                    where: { id: args.id },
+                    data,
+                });
+            },
+        },
+        changeProfile: {
+            type: ProfileType,
+            description: 'Changes a data of a profile',
+            args: {
+                id: {
+                    type: new GraphQLNonNull(UUIDType)
+                },
+                dto: {
+                    type: new GraphQLNonNull(ChangeProfileInputTypes)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                const data = {...args.dto};
+                return await prisma.profile.update({
                     where: { id: args.id },
                     data,
                 });
