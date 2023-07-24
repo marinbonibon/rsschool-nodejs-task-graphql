@@ -71,7 +71,7 @@ const UserType = new GraphQLObjectType({
     name: 'User',
     fields: () => ({
         id: {type: new GraphQLNonNull(UUIDType)},
-        name: {type: new GraphQLNonNull(GraphQLString)},
+        name: {type: new GraphQLNonNull(UUIDType)},
         balance: {type: new GraphQLNonNull(GraphQLFloat)},
         profile: {
             type: ProfileType,
@@ -244,9 +244,17 @@ const RootQuery = new GraphQLObjectType({
 const CreatePostInputTypes = new GraphQLInputObjectType({
     name: 'CreatePostInput',
     fields: {
-        title: { type: new GraphQLNonNull(GraphQLString) },
-        content: { type: new GraphQLNonNull(GraphQLString) },
+        title: { type: new GraphQLNonNull(UUIDType) },
+        content: { type: new GraphQLNonNull(UUIDType) },
         authorId: { type: new GraphQLNonNull(UUIDType) },
+    }
+});
+
+const CreateUserInputTypes = new GraphQLInputObjectType({
+    name: 'CreateUserInput',
+    fields: {
+        name: { type: new GraphQLNonNull(UUIDType) },
+        balance: {type: new GraphQLNonNull(GraphQLFloat)},
     }
 });
 
@@ -262,13 +270,34 @@ const RootMutation = new GraphQLObjectType({
                 }
             },
             resolve: async (_obj, args, prisma) => {
-                const data = { ...args.dto };
-                return await prisma.post.create({
-                    data
-                });
-            }
-
-        }
+                try {
+                    const data = { ...args.dto };
+                    return await prisma.post.create({
+                        data
+                    });
+                } catch (error) {
+                    console.log('error', error);
+                }
+            },
+        },
+        createUser: {
+            type: UserType,
+            args: {
+                dto: {
+                    type: new GraphQLNonNull(CreateUserInputTypes)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+               try {
+                   const data = { ...args.dto };
+                   return await prisma.user.create({
+                       data
+                   });
+               } catch (error) {
+                   console.log('error', error);
+               }
+            },
+        },
     }
 })
 
