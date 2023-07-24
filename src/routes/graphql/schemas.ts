@@ -447,6 +447,54 @@ const RootMutation = new GraphQLObjectType({
                     },
                 })
             }
+        },
+        deletePost: {
+            type: GraphQLBoolean,
+            description: 'Deletes a post',
+            args: {
+                id: {
+                    type: new GraphQLNonNull(UUIDType)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                await prisma.post.delete({
+                    where: {
+                        id: args.id,
+                    },
+                })
+            }
+        },
+        deleteUser: {
+            type: GraphQLBoolean,
+            description: 'Deletes a user',
+            args: {
+                id: {
+                    type: new GraphQLNonNull(UUIDType)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                await prisma.user.delete({
+                    where: {
+                        id: args.id,
+                    },
+                })
+            }
+        },
+        deleteProfile: {
+            type: GraphQLBoolean,
+            description: 'Deletes a profile',
+            args: {
+                id: {
+                    type: new GraphQLNonNull(UUIDType)
+                }
+            },
+            resolve: async (_obj, args, prisma) => {
+                await prisma.profile.delete({
+                    where: {
+                        id: args.id,
+                    },
+                })
+            }
         }
     })
 })
